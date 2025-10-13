@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/42693455-95e4-4daf-96e6-73aef47c733b" alt="Wotoha Music Bot Banner" width="100%">
+  <img src="https://github.com/user-attachments/assets/c6c75596-5b8f-4a43-999c-072048041abe" alt="Wotoha Music Bot Banner" width="100%">
 </p>
 
 # Wotoha Music Bot (音葉)
