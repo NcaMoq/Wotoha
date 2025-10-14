@@ -1,13 +1,14 @@
 import re
 
 #FFmpeg
+#FFmpeg
 FFMPEG_BEFORE = (
-    '-re -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 '
-    '-analyzeduration 0 -probesize 32'
+    '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 '
+    '-analyzeduration 20M -probesize 5M'
 )
 FFMPEG_OPTIONS = (
-    '-vn -af "volume=0.06,aresample=async=1000:first_pts=0" '
-    '-b:a 256k -bufsize 4M -maxrate 2M'
+    '-vn -af "volume=0.06" '
+    '-b:a 128k'
 )
 
 #Allowed domain
