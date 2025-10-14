@@ -194,6 +194,7 @@ class MusicCog(commands.Cog):
             detail = Embed(
                 title=f"{info['title']}",
                 url=info['webpage_url'],
+                description=info['uploader'],
                 color=0x49b0e4
             )
 
