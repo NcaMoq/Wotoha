@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 class PlayerView(View):
     def __init__(self):
         super().__init__(timeout=None)
-
     @button(label="⏭️Skip", style=discord.ButtonStyle.secondary, custom_id="player_skip")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def skip_button(self, interaction: discord.Interaction, button: Button):
@@ -71,7 +70,7 @@ class PlayerView(View):
             await interaction.response.send_message(f"**Now playing!!!!**\n{cur.get('webpage_url')}", ephemeral=True)
         else:
             await interaction.response.send_message("再生中の曲がありません", ephemeral=True)
-
+            
     @button(label="🗒️List", style=discord.ButtonStyle.primary, custom_id="player_queue")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def queue_button(self, interaction: discord.Interaction, button: Button):
@@ -138,12 +137,9 @@ class MusicCog(commands.Cog):
     async def on_voice_state_update(self, member, before, after):
         if before.channel == after.channel:
             return
-
         vc = member.guild.voice_client
-        
         if not vc or not vc.is_connected():
             return
-
         if len(vc.channel.members) == 1 and vc.channel.members[0].id == self.bot.user.id:
             state = guild_states.pop(member.guild.id, None)
             if state and state.player_task:
@@ -207,6 +203,7 @@ class MusicCog(commands.Cog):
         detail.set_thumbnail(url=info.get('thumbnail'))
         
         await interaction.followup.send(embed=detail, view=PlayerView())
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(MusicCog(bot))

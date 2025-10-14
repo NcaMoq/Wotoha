@@ -41,6 +41,17 @@ class WotohaBot(commands.Bot):
 
     async def on_ready(self):
         logger.info(f"Bot has started: {self.user} (ID: {self.user.id})")
+
+        #ニックネームリセット
+        logger.info("Resetting nickname in all joined guilds...")
+        for guild in self.guilds:
+            try:
+                await guild.me.edit(nick=None)
+            except discord.Forbidden:
+                logger.warning(f"No permission to change nickname in guild: {guild.name} (ID: {guild.id})")
+            except Exception as e:
+                logger.error(f"Failed to reset nickname in guild {guild.name}: {e}")
+        logger.info("Nickname reset complete.")
         
         await self.change_presence(activity=discord.CustomActivity(name='まるまるもりもり'))
         
