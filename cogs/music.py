@@ -21,12 +21,14 @@ logger = logging.getLogger(__name__)
 class PlayerView(View):
     def __init__(self):
         super().__init__(timeout=None)
+
     @button(label="⏭️Skip", style=discord.ButtonStyle.secondary, custom_id="player_skip")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def skip_button(self, interaction: discord.Interaction, button: Button):
         state = guild_states[interaction.guild.id]
         if state.voice is None or not state.voice.is_playing():
-            await interaction.response.send_message("再生中の曲がありません", ephemeral=True)
+            embed = Embed(description="再生中の曲がありません。", color=0xE74C3C)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             was_looping = state.looping
             state.looping = False
@@ -49,7 +51,8 @@ class PlayerView(View):
     async def shuffle_button(self, interaction: discord.Interaction, button: Button):
         state = guild_states[interaction.guild.id]
         if state.queue.qsize() < 2:
-            return await interaction.response.send_message("シャッフルできる曲がありません", ephemeral=True)
+            embed = Embed(description="シャッフルできる曲がありません。", color=0xE74C3C)
+            return await interaction.response.send_message(embed=embed, ephemeral=True)
         
         queue_list = list(state.queue._queue)
         random.shuffle(queue_list)
@@ -59,7 +62,7 @@ class PlayerView(View):
             await new_queue.put(item)
         state.queue = new_queue
         
-        embed = Embed(description="✅ プレイリストをシャッフルしました！", color=0x49b0e4)
+        embed = Embed(description="プレイリストをシャッフルしました！", color=0x49b0e4)
         await interaction.response.send_message(embed=embed)
 
     @button(label="🎵", style=discord.ButtonStyle.success, custom_id="player_now")
@@ -67,9 +70,15 @@ class PlayerView(View):
     async def now_button(self, interaction: discord.Interaction, button: Button):
         cur = guild_states[interaction.guild.id].current
         if cur:
-            await interaction.response.send_message(f"**Now playing!!!!**\n{cur.get('webpage_url')}", ephemeral=True)
+            embed = Embed(
+                title="🎵 Now Playing",
+                description=f"[{cur.get('title')}]({cur.get('webpage_url')})",
+                color=0x49b0e4
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
-            await interaction.response.send_message("再生中の曲がありません", ephemeral=True)
+            embed = Embed(description="再生中の曲がありません。", color=0xE74C3C)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             
     @button(label="🗒️List", style=discord.ButtonStyle.primary, custom_id="player_queue")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
@@ -79,17 +88,22 @@ class PlayerView(View):
         queued_songs = list(state.queue._queue)
 
         if not current_song and not queued_songs:
-            return await interaction.response.send_message("プレイリストは空です", ephemeral=True)
+            embed = Embed(description="プレイリストは空です。", color=0xE74C3C)
+            return await interaction.response.send_message(embed=embed, ephemeral=True)
 
-        embed = Embed(title="Playlist", color=0x49b0e4)
+        embed = Embed(title="🗒️Playlist", color=0x49b0e4)
         if current_song:
-            embed.add_field(name=f"▶️ 再生中: {current_song.get('title')}", value=f"[{current_song.get('uploader')}]({current_song.get('webpage_url')})", inline=False)
+            embed.add_field(
+                name=f"Now playing: {current_song.get('title')}",
+                value=f"[{current_song.get('uploader')}]({current_song.get('webpage_url')})",
+                inline=False
+            )
 
         if queued_songs:
             queue_text = "\n".join([f"{idx+1}. [{info.get('title')}]({info.get('webpage_url')})" for idx, info in enumerate(queued_songs[:10])])
             if len(queued_songs) > 10:
-                queue_text += f"\n...他{len(queued_songs) - 10}曲"
-            embed.add_field(name="次に再生", value=queue_text, inline=False)
+                queue_text += f"\n...and {len(queued_songs) - 10} more songs"
+            embed.add_field(name="Next Up", value=queue_text, inline=False)
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -151,11 +165,15 @@ class MusicCog(commands.Cog):
     @app_commands.command(name="play", description="おんがくをさいせい")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def play(self, interaction: discord.Interaction, url: str):
+        # 参加していない場合
         if interaction.user.voice is None:
-            return await interaction.response.send_message("ボイスチャンネルに参加してください", ephemeral=True)
+            embed = Embed(description="ボイスチャンネルに参加してください。", color=0xE74C3C)
+            return await interaction.response.send_message(embed=embed, ephemeral=True)
 
+        # URL無効
         if not is_allowed_url(url):
-            return await interaction.response.send_message("このURLは使用できません", ephemeral=True)
+            embed = Embed(description="このURLは使用できません。", color=0xE74C3C)
+            return await interaction.response.send_message(embed=embed, ephemeral=True)
 
         await interaction.response.defer()
 
@@ -170,7 +188,8 @@ class MusicCog(commands.Cog):
                 state.voice = interaction.guild.voice_client
         except Exception as e:
             logger.error(f"Voice connection error: {e}")
-            return await interaction.followup.send("ボイスチャンネルへの接続に失敗しました。")
+            embed = Embed(description="ボイスチャンネルへの接続に失敗しました。", color=0xE74C3C)
+            return await interaction.followup.send(embed=embed)
         
         if state.player_task is None or state.player_task.done():
             state.player_task = self.bot.loop.create_task(self.player_loop(guild_id))
@@ -178,25 +197,18 @@ class MusicCog(commands.Cog):
         try:
             info = await extract_full_info(url)
         except Exception:
-            return await interaction.followup.send("楽曲情報の取得に失敗しました。")
+            embed = Embed(description="楽曲情報の取得に失敗しました。", color=0xE74C3C)
+            return await interaction.followup.send(embed=embed)
 
         was_empty = state.queue.empty() and state.current is None
         await state.queue.put(info)
         
-        if was_empty:
-            detail = Embed(
-                title=f"{info['title']}",
-                url=info['webpage_url'],
-                description=info['uploader'],
-                color=0x49b0e4
-            )
-        else:
-            detail = Embed(
-                title=f"{info['title']}",
-                url=info['webpage_url'],
-                description=info['uploader'],
-                color=0x49b0e4
-            )
+        detail = Embed(
+            title=f"{info['title']}",
+            url=info['webpage_url'],
+            description=info['uploader'],
+            color=0x49b0e4
+        )
 
         m, s = divmod(int(info['duration']), 60)
         detail.add_field(name="Time", value=f"{m}m {s}s", inline=True)

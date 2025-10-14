@@ -1,7 +1,6 @@
 import re
 
 #FFmpeg
-#FFmpeg
 FFMPEG_BEFORE = (
     '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 '
     '-analyzeduration 20M -probesize 5M'
