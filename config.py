@@ -7,7 +7,7 @@ FFMPEG_BEFORE = (
 )
 FFMPEG_OPTIONS = (
     '-vn -af "volume=0.06" '
-    '-b:a 128k'
+    '-b:a 128k -compression_level 0'
 )
 
 #Allowed domain
@@ -23,14 +23,13 @@ ALLOWED_BASE_DOMAINS = {
 
 #yt-dlp
 YTDLP_INFO_OPTS = {
-    'format': 'bestaudio/best',
+    'format': 'bestaudio[abr<=192]/bestaudio/best',
     'noplaylist': True,
     'default_search': 'ytsearch',
     'socket_timeout': 10,
     'retries': 5,
     'fragment_retries': 5,
     'skip_unavailable_fragments': True,
-    'throttled_rate': '100K',
     'extractor_retries': 3,
     'ignoreerrors': True,
     'geo_bypass': True,
