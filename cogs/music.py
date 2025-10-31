@@ -165,12 +165,10 @@ class MusicCog(commands.Cog):
     @app_commands.command(name="play", description="おんがくをさいせい")
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     async def play(self, interaction: discord.Interaction, url: str):
-        # 参加していない場合
         if interaction.user.voice is None:
             embed = Embed(description="ボイスチャンネルに参加してください。", color=0xE74C3C)
             return await interaction.response.send_message(embed=embed, ephemeral=True)
 
-        # URL無効
         if not is_allowed_url(url):
             embed = Embed(description="このURLは使用できません。", color=0xE74C3C)
             return await interaction.response.send_message(embed=embed, ephemeral=True)

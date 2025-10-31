@@ -13,7 +13,7 @@ from config import (
 
 logger = logging.getLogger("wotoha.helpers")
 
-stream_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="stream_worker")
+stream_executor = ThreadPoolExecutor(max_workers=10, thread_name_prefix="stream_worker")
 STREAM_YTDL = yt_dlp.YoutubeDL(YTDLP_STREAM_OPTS)
 
 

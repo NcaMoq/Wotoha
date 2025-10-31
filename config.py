@@ -6,8 +6,9 @@ FFMPEG_BEFORE = (
     '-analyzeduration 20M -probesize 5M'
 )
 FFMPEG_OPTIONS = (
-    '-vn -af "volume=0.06" '
-    '-b:a 128k -compression_level 0'
+    '-vn -af "volume=0.06,aresample=async=1000:first_pts=0" '
+    '-b:a 128k -compression_level 0 '
+    '-bufsize 5M'
 )
 
 #Allowed domain
